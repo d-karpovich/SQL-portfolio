@@ -1,11 +1,11 @@
---task 1 +
-
+--List aircraft with less than 50 seats
 select aircraft_code, count(*)
 from seats s 
 group by aircraft_code 
 having count(*) < 50
 
---task 2 +
+	
+--List the percent changes of booking cost in each month rounded to 2 digits
 with cte as
 	(select date_trunc('month', book_date)::date as booking_month, sum(total_amount) as booking_amount
 	from bookings b 
@@ -17,7 +17,7 @@ select cte.booking_month, lag(cte.booking_amount) over (), cte.booking_amount,
 		else round(((cte.booking_amount - lag(cte.booking_amount) over())/lag(cte.booking_amount) over () * 100), 2)
 	end as difference
 from cte
-
+--One more solution of this task
 with cte as
 	(select date_trunc('month', book_date)::date as booking_month, sum(total_amount) as booking_amount
 	from bookings b 
@@ -27,14 +27,16 @@ select cte.booking_month, lag(cte.booking_amount) over (), cte.booking_amount,
 	coalesce (round(((cte.booking_amount - lag(cte.booking_amount) over())/lag(cte.booking_amount) over () * 100), 2), 0) as difference
 from cte
 
---task 3 +
---explain analyse --28.22/0.336
+	
+--List aircraft without business-class option using array_agg function
 select aircraft_code, array_agg(fare_conditions) as fc
 from seats s 
 group by 1
 having array_position(array_agg(fare_conditions) , 'Business')  is null
 
---task 4
+	
+--Calculate a daily running total of seats in empty departed aircraft for each airport. 
+--Filter days, when more than one empty aircraft departed from an airport
 with cte as (
 	select aircraft_code, count(*) as seats_no
 	from seats s 
@@ -54,7 +56,8 @@ from cte2
 where flight_count > 1
 
 
---task 5
+--Find the percentage ratio of route flights (direct flight from one airport to another) to the overall number of flights using the window function. 
+--List airport names and the percentage
 select a.airport_name as departure , a2.airport_name as arrival, count(*), sum(count(*)) over (), count(*) / sum(count(*)) over () * 100. as proportion
 from flights f
 join airports a on f.departure_airport = a.airport_code 
@@ -62,13 +65,17 @@ join airports a2 on f.arrival_airport = a2.airport_code
 group by 1,2
 
 
---task 6 +
+--List the number of passengers grouped by region code in phone number (3 digits after +7)
 select substring(contact_data ->> 'phone', 3, 3) as phonecode, count(passenger_id) 
 from tickets t 
 group by 1
 
 
---task 7 +
+--Classify cash flows (tickets cost total) by directions:
+-- - less than 50 mln - low
+-- - from 50 mln to 150 mln - middle
+-- - more than 150 mln - high
+--List the number of directions in each class
 with cte as (
 	select concat(f.departure_airport, f.arrival_airport), sum(tf.amount),
 		case 
@@ -83,7 +90,11 @@ select cte.amount_cat, count(concat)
 from cte
 group by 1
 
---task 8 +
+	
+--Calculate:
+-- - a median ticket cost
+-- - a median booking cost
+-- - the ratio between the median booking cost and the median ticket cost rounded to 2 digits
 select percentile_cont(0.5) within group (order by tf.amount) ticket_amount, 
 	(select percentile_cont(0.5) within group (order by b.total_amount) booking_amount
 	from bookings b),
@@ -92,10 +103,12 @@ select percentile_cont(0.5) within group (order by tf.amount) ticket_amount,
 		(percentile_cont(0.5) within group (order by tf.amount))::numeric, 2) ratio
 from ticket_flights tf
 
---task 9
-create extension cube
+	
+-- Find the minimal cost of 1 kilometer to flight for a passenger
+-- We will use eartdistance module for distance calculations
+create extension cube -- this module we need for correct earthdistance module work
 
-create extension earthdistance
+create extension earthdistance -- installation of the module
 
 with cte as (
 	select airport_code, ll_to_earth( latitude, longitude)

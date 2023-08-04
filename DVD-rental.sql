@@ -1,9 +1,3 @@
---=============== МОДУЛЬ 3. ОСНОВЫ SQL =======================================
---= ПОМНИТЕ, ЧТО НЕОБХОДИМО УСТАНОВИТЬ ВЕРНОЕ СОЕДИНЕНИЕ И ВЫБРАТЬ СХЕМУ PUBLIC===========
-SET search_path TO public;
-
---======== ОСНОВНАЯ ЧАСТЬ ==============
-
 --ЗАДАНИЕ №1
 --Выведите для каждого покупателя его адрес проживания, 
 --город и страну проживания.
@@ -19,26 +13,10 @@ join country using(country_id)
 
 --ЗАДАНИЕ №2
 --С помощью SQL-запроса посчитайте для каждого магазина количество его покупателей.
-select store_id, count(customer_id)
-from customer c
-group by store_id 
- 
-
-
-
-
 --Доработайте запрос и выведите только те магазины, 
 --у которых количество покупателей больше 300-от.
 --Для решения используйте фильтрацию по сгруппированным строкам 
 --с использованием функции агрегации.
-select store_id, count(customer_id)
-from customer c
-group by store_id
-having count(customer_id) > 300
-
-
-
-
 -- Доработайте запрос, добавив в него информацию о городе магазина, 
 --а также фамилию и имя продавца, который работает в этом магазине.
 select c.store_id, count(customer_id)as "Number of customers", ci.city, concat_ws(' ', st.last_name, st.first_name) as "Staff name"  
@@ -49,8 +27,6 @@ join city ci on a.city_id = ci.city_id
 join staff st on s.store_id = st.store_id 
 group by c.store_id, ci.city_id, st.staff_id 
 having count(customer_id) > 300
-
-
 
 
 --ЗАДАНИЕ №3
@@ -102,8 +78,6 @@ group by c.customer_id
  from rental r
  group by customer_id
  order by 1
-
-
 
 
 --======== ДОПОЛНИТЕЛЬНАЯ ЧАСТЬ ==============
